@@ -16,6 +16,33 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,カタログとスキーマの作成
+spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog}")
+spark.sql(f"USE CATALOG {catalog}")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {schema}")
+spark.sql(f"USE {schema}")
+
+spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.{pdf_folder_name}")
+
+# COMMAND ----------
+
+# DBTITLE 1,pdfをVolumeにコピー
+import os
+import shutil
+
+# Use os module to get the current working directory as base_dir
+base_dir = os.getcwd()
+src_dir = os.path.join(base_dir, "incident_report_pdf")
+
+for filename in os.listdir(src_dir):
+    src_path = os.path.join(src_dir, filename)
+    dst_path = os.path.join(pdf_dir, filename)
+    if os.path.isfile(src_path):
+        shutil.copy(src_path, dst_path)
+
+# COMMAND ----------
+
+# DBTITLE 1,PDFをテーブルとして構造化
 from pypdf import PdfReader
 import os
 from pyspark.sql import Row
@@ -51,6 +78,7 @@ display(df)
 
 # COMMAND ----------
 
+# DBTITLE 1,データの整形
 # PDFから抽出したテキストの整形処理をAIで実施。ヘッダーやフッター、不要な改行などを除去し、読みやすいテキストに変換。
 
 prompt = "'Format the following text which is orginally extracted from pdf files. It may contain some unnesessary information like header and footer, and unexpected line break. Not include additonal comment like [Here is the formatted text:]'"
@@ -71,6 +99,7 @@ display(spark.read.table(f"{catalog}.{schema}.accident_report_bronze_pdf_curated
 
 # COMMAND ----------
 
+# DBTITLE 1,Entity抽出用のプロンプトの定義
 prompt = """
 'The following document is an incident report for a specific incident.
 Please extract the information as much as accurate and detailed. You can join or merge some columns/attributes if needed.
@@ -95,6 +124,7 @@ response example:
 
 # COMMAND ----------
 
+# DBTITLE 1,Entityの抽出
 sql_text = f"select path, text, ai_query('{curate_llm_endpoint_name}',concat({prompt},text)) as entity from {catalog}.{schema}.accident_report_bronze_pdf_curated" 
 df = spark.sql(sql_text)
 display(df)
@@ -113,6 +143,7 @@ df.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.accident_report_bron
 
 # COMMAND ----------
 
+# DBTITLE 1,Entityを列として追加
 sql_text = f"""
 select 
 row_number() OVER (ORDER BY (SELECT NULL)) AS Id,
@@ -140,6 +171,7 @@ df.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.accident_report_silv
 
 # COMMAND ----------
 
+# DBTITLE 1,インデックス作成のための設定
 spark.sql(f"ALTER TABLE `{catalog}`.`{schema}`.accident_report_silver SET TBLPROPERTIES (delta.enableChangeDataFeed = true)")
 
 # COMMAND ----------

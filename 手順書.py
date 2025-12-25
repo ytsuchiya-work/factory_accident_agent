@@ -1,14 +1,18 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC ## はじめに
-# MAGIC Playgroundで選択するモデルは、ツールが対応していればなんでも良いですです。
+# MAGIC Playgroundで選択するモデルは、**ツールが対応していれば**何でも良いです。
+# MAGIC
+# MAGIC ![](./img/tool_model.png)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## RAGの作成
+# MAGIC ## 1. RAGの作成
 # MAGIC
 # MAGIC Playground でツールとして`Vector Search` -> `{catalog}.{schema}.accident_report_silver_index` を登録した上で、下記のプロンプトを指定してください。
+# MAGIC
+# MAGIC ![](./img/vs.png)
 # MAGIC
 # MAGIC #### システムプロンプト
 # MAGIC あなたは工場における事故事例の専門家です。
@@ -22,8 +26,10 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 作業の注意点を教えてくれるエージェント
+# MAGIC ## 2. 作業の注意点を教えてくれるエージェント
 # MAGIC Playground でツールとして、すべてのUC関数 `{catalog}.{schema}.*`を登録した上で、下記のプロンプトを指定してください。
+# MAGIC
+# MAGIC ![](./img/function.png)
 # MAGIC
 # MAGIC #### システムプロンプト
 # MAGIC あなたは工場の作業員に対して、事故防止のアドバイスを行う専門家でもあります。
@@ -31,6 +37,11 @@
 # MAGIC
 # MAGIC #### プロンプト
 # MAGIC これから作業します。
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ![](./img/setting.png)
 
 # COMMAND ----------
 

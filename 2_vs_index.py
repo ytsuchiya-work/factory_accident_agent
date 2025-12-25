@@ -8,6 +8,19 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,ベクトル検索エンドポイントの作成
+from databricks.vector_search.client import VectorSearchClient
+
+client = VectorSearchClient()
+
+client.create_endpoint(
+    name=VECTOR_SEARCH_ENDPOINT_NAME,
+    endpoint_type="STANDARD"  # または "STORAGE_OPTIMIZED"
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,インデックスの作成
 from databricks.vector_search.client import VectorSearchClient
 
 client = VectorSearchClient()
